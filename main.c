@@ -3,6 +3,8 @@
 #include <string.h>
 #define INPUT "input.txt"
 #define OUTPUT "output.txt"
+#define TEMP "temp.txt"
+#define MAX 256
 
 struct PlaneClass {
     int priorityId;
@@ -23,35 +25,33 @@ typedef struct PlaneClass Plane;
 typedef struct LinkedList List;
 
 // GLOBAL VARIABLES
+List LList[MAX];
+List * front; 
+List * rear; 
 int triedLandCount = 0; // Tried Landing Count. If this value reaches 2. 
 FILE *fptr; // File pointer for input.txt .. The file will be used in many lines and methods.
+char str[MAX];
 
-int Empty(List * n) { // n is the front of the linked list.
-    if(n->next == NULL && n->data == -1) {
-        return 0;
-    }
-    else {
+int IsEmpty() { // Return 1 if it is empty.
+    if(front->next == rear) 
         return 1;
-    }
+    else 
+        return 0;
 }
 
 int size(List * n) {
     int count = 0;
-    List * temp = n;
-    while(temp->next != NULL) {
-        count++;
-        temp = temp->next;
-    }
+    
     return count;
 }
 
-struct LinkedList * addQ(List * n, int d) { // n is the end link pointer of the linked list.
+void addQ(int d, int p) { // n is the end link pointer of the linked list.
     List * new;
     new = malloc(sizeof(List));
     new->data = d;
-    // replace end pointer list and new pointer list
-    int tempdata = n->data;
-    return new;
+    new->priority = p;
+
+    
 }
 
 struct LinkedList * pollQ(List * n) { // n is the front of the linked list.
@@ -97,12 +97,12 @@ struct LinkedList * removeQ(List * n, int d) {
     return temp;
 }
 
-struct LinkedList * front(List * n) {
+struct LinkedList * frontQ(List * n) {
     List * temp = n;
     return n;
 }
 
-struct LinkedList * back(List * n) {
+struct LinkedList * backQ(List * n) {
     List * temp = n;
     // there is a if statement for if the linked list has one element.
     while (temp->next != NULL) {
@@ -135,27 +135,31 @@ void importFile() {
     fclose(fptr);
 }
 
+void readTheFileYouFkcIdiotC() {
+    if((fptr=fopen(INPUT,"r")) == NULL) {
+        printf("Dosya Acilamadi.\n");
+    }
+    else {
+        /*for (int i = 0; i < 24; i++)
+        {
+            fgets(str,MAX,fptr);
+            fscanf(,"%d %d %d",str);
+        }*/
+        for (int i = 0; i < 40; i++)
+        {
+            fgets(str,MAX,fptr);
+            printf("%s",str);
+        }
+        
+    }
+    fclose(fptr);
+}
+
 int main() {
     // Create the first and the last element of the linked list.
-    List * front; List * rear; 
     front = malloc(sizeof(List));
     rear = malloc(sizeof(List));
-    rear->data = -1;
-    front->data = -1; // if the data value is still same end of the program, is empty.
-
-    List * second;
-    List * third;
-    second = malloc(sizeof(List));
-    third = malloc(sizeof(List));
-
-    front->next = second;
-    second->next = third;
-    front->data = 1;
-    second->data = 2;
-    third->data =3;
-
-    /*printf("%d %d\n",front->data, front->next->data);
-    front = dequeue(front);
-    printf("%d %d\n",front->data, front->next->data);*/
-    front = removeQ(front,2);
+    front->next = rear;
+    // Program Started.
+    readTheFileYouFkcIdiotC();
 }
