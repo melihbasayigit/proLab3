@@ -17,19 +17,16 @@ struct PlaneClass {
     int triedLandCount; // Tried Landing Count. If this value reaches 3 land immediatly or go to the other airport.
 };
 
-struct LinkedList {
-    int data;
+typedef struct node {
+    int ID;
     int priority;
-    struct LinkedList *next;
-};
+ 
+    struct node* next;
+} Node;
 
 typedef struct PlaneClass Plane;
-typedef struct LinkedList List;
 
 // GLOBAL VARIABLES
-List LList[MAX];
-List * front; 
-List * rear; 
 bool IsDayCompleted = false; 
 FILE *fptr; // File pointer for input.txt .. The file will be used in many lines and methods.
 int Time = 1;
@@ -37,92 +34,50 @@ char str[MAX];
 // GLOBAL VALUE FOR READ TO FILE FUNCTION
 Plane planes[28];
 
-bool IsEmpty() { // Return true if it is empty.
-    if(front->next == rear) 
-        return true;
-    else 
-        return false;
-}
-
-int size(List * n) {
-    int count = 0;
-    return count;
-}
-
-void addQ(int d, int p) { // n is the end link pointer of the linked list.
-    List * new;
-    new = malloc(sizeof(List));
-    new->data = d;
-    new->priority = p;
-
-    
-}
-
-struct LinkedList * pollQ(List * n) { // n is the front of the linked list.
-    List * second;
-    second = n->next;
-    n->data = second->data;
-    n->next = second->next;
-    return n;
-}
-
-struct LinkedList * peekQ(List * n) { // n is the front of the linked list.
-    List * new;
-    return new;
-}
-
-struct LinkedList * clearQ() { // n is the front of the linked list.
-    List * n;
-    n = malloc(sizeof(List));
-    n->data = -1;
-    n->next = NULL;
-    return n;
-}
-
-struct LinkedList * removeQ(List * n, int d) {
-    List * temp;
-    temp = malloc(sizeof(List));
-    temp = n;
-    // serach the first element of the linked list.
-    if(temp->data == d) {
-        // delete it.
-        temp->next = temp->next->next;
-    }
-    while(temp->next != NULL) {
-        if(temp->next->data == d) {
-            // Delete it.
-            temp->next = temp->next->next;
-        }
-        else {
-            // continue for searching
-            temp = temp->next;
-        }
-    }
+Node* newNode(int d, int p)
+{
+    Node* temp = (Node*)malloc(sizeof(Node));
+    temp->ID = d;
+    temp->priority = p;
+    temp->next = NULL;
+ 
     return temp;
 }
 
-struct LinkedList * frontQ(List * n) {
-    List * temp = n;
-    return n;
+int peek(Node** head)
+{
+    return (*head)->ID;
 }
 
-struct LinkedList * backQ(List * n) {
-    List * temp = n;
-    // there is a if statement for if the linked list has one element.
-    while (temp->next != NULL) {
-        temp = temp->next;
-    }
-    return temp;
+void pop(Node** head)
+{
+    Node* temp = *head;
+    (*head) = (*head)->next;
+    free(temp);
 }
 
-void printAllQueue(List * n) { // n is the front of the linked list.
-    List * ptr = n;
-    int i = 0;
-    while(ptr != NULL) {
-        printf("%d %d \t",i,ptr->data);
-        i++;
-        ptr = ptr->next;
+void push(Node** head, int d, int p)
+{
+    Node* start = (*head);
+     Node* temp = newNode(d, p);
+    if ((*head)->priority > p) {
+ 
+        temp->next = *head;
+        (*head) = temp;
     }
+    else {
+        while (start->next != NULL &&
+            start->next->priority < p) {
+            start = start->next;
+        }
+        temp->next = start->next;
+        start->next = temp;
+    }
+}
+
+int isEmpty(Node** head)
+{
+    return (*head) == NULL;
 }
 
 void timeUp() {
@@ -232,13 +187,20 @@ void sortPlanes() {
 
 
 int main() {
-    // Create the first and the last element of the linked list.
-    front = malloc(sizeof(List));
-    rear = malloc(sizeof(List));
-    front->next = rear;
+    Node* pq = newNode(4, 1);
+    push(&pq, 5, 2);
+    push(&pq, 6, 3);
+    push(&pq, 7, 0);
+ 
+    while (!isEmpty(&pq)) {
+        printf("%d ", peek(&pq));
+        pop(&pq);
+    }
     setTriedCount();
     // Program Started.
     importInput();
     sortPlanes();
     printInputFile();
+
+    return 0;
 }
