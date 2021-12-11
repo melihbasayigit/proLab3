@@ -31,6 +31,8 @@ List * rear;
 int triedLandCount = 0; // Tried Landing Count. If this value reaches 2. 
 FILE *fptr; // File pointer for input.txt .. The file will be used in many lines and methods.
 char str[MAX];
+// GLOBAL VALUE FOR READ TO FILE FUNCTION
+Plane planes[28];
 
 int IsEmpty() { // Return 1 if it is empty.
     if(front->next == rear) 
@@ -121,23 +123,6 @@ void printAllQueue(List * n) { // n is the front of the linked list.
     }
 }
 
-
-void importFile() {
-    if((fptr = fopen(INPUT,"r")) == NULL) {
-        printf("File could not be opened.\n");
-        exit(1);
-    }
-    
-    
-    
-
-
-    fclose(fptr);
-}
-
-// GLOBAL VALUE FOR READIN FILE FUNCTION
-Plane planes[28];
-
 int sizeInput(FILE * ptr) { // Return size of planes in the input file.
     if((ptr = fopen(INPUT,"r")) == NULL) {
         printf("Dosya acilamadi\n");
@@ -157,7 +142,7 @@ int sizeInput(FILE * ptr) { // Return size of planes in the input file.
     return count -1;
 }
 
-void readTheFileYouFkcIdiotC() {
+void importInput() {
     if((fptr=fopen(INPUT,"r")) == NULL) {
         printf("Dosya Acilamadi.\n");
     }
@@ -168,19 +153,40 @@ void readTheFileYouFkcIdiotC() {
         {
             fgets(str,MAX,fptr);
             if(strlen(str) > 4) {
-                //printf("%s",str);
                 sscanf(str,"%d %d %d", &planes[i].priorityId, &planes[i].planeId , &planes[i].reqLandTime);
-                printf("%d ", planes[i].priorityId);
-                printf("%d ", planes[i].planeId);
-                printf("%d \n", planes[i].reqLandTime);
             }       
         }
     }
     fclose(fptr);
 }
 
-void printPlaneIDs() {
+void printInputFile() {
+    FILE * ptr;
+    for (int i = 0; i < sizeInput(ptr); i++)
+    {
+        printf("%d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime);
+    }
+    
+}
 
+void printOutputFile() {
+    for (int i = 0; i < 24; i++) //change int 24 to plane number.
+    {
+        printf("%d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime);
+    }
+}
+
+void writeOutputFile(FILE * ptr) {
+    if((ptr = fopen(OUTPUT,"w")) == NULL) {
+        printf("Dosya acilamadi.\n");
+    }
+    fputs("oncelik_id ucak_id, talep_edilen_inis_saati, inis_saati, gecikme_suresi, kalkis_saati\n", ptr);
+    for (int i = 0; i < 24; i++)
+    {
+        fprintf(ptr,"%d %d %d %d %d %d\n", planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, 
+                                        planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
+    }
+    fclose(ptr);
 }
 
 int main() {
@@ -189,5 +195,4 @@ int main() {
     rear = malloc(sizeof(List));
     front->next = rear;
     // Program Started.
-    readTheFileYouFkcIdiotC();
 }
