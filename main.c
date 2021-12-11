@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #define INPUT "input.txt"
 #define OUTPUT "output.txt"
 #define TEMP "temp.txt"
@@ -43,7 +44,6 @@ int IsEmpty() { // Return 1 if it is empty.
 
 int size(List * n) {
     int count = 0;
-    
     return count;
 }
 
