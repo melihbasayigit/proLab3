@@ -14,6 +14,7 @@ struct PlaneClass {
     int LandTime;
     int delayTime;
     int takeOffTime;
+    int triedLandCount; // Tried Landing Count. If this value reaches 3 land immediatly or go to the other airport.
 };
 
 struct LinkedList {
@@ -29,17 +30,18 @@ typedef struct LinkedList List;
 List LList[MAX];
 List * front; 
 List * rear; 
-int triedLandCount = 0; // Tried Landing Count. If this value reaches 2. 
+bool IsDayCompleted = false; 
 FILE *fptr; // File pointer for input.txt .. The file will be used in many lines and methods.
+int Time = 1;
 char str[MAX];
 // GLOBAL VALUE FOR READ TO FILE FUNCTION
 Plane planes[28];
 
-int IsEmpty() { // Return 1 if it is empty.
+bool IsEmpty() { // Return true if it is empty.
     if(front->next == rear) 
-        return 1;
+        return true;
     else 
-        return 0;
+        return false;
 }
 
 int size(List * n) {
@@ -123,6 +125,14 @@ void printAllQueue(List * n) { // n is the front of the linked list.
     }
 }
 
+void timeUp() {
+    Time++;
+    if(Time == 25) {
+        Time = 0;
+        IsDayCompleted = true;
+    }
+}
+
 int sizeInput(FILE * ptr) { // Return size of planes in the input file.
     if((ptr = fopen(INPUT,"r")) == NULL) {
         printf("Dosya acilamadi\n");
@@ -140,6 +150,14 @@ int sizeInput(FILE * ptr) { // Return size of planes in the input file.
     }
     fclose(ptr);
     return count -1;
+}
+
+void setTriedCount() {
+    FILE * ptr;
+    for (int i = 0; i < sizeInput(ptr); i++)
+    {
+        planes[i].triedLandCount = 0;   
+    }
 }
 
 void importInput() {
@@ -189,10 +207,38 @@ void writeOutputFile(FILE * ptr) {
     fclose(ptr);
 }
 
+void sortPlanes() {
+    for (int i = 0; i < 28; i++)
+    {
+        for (int j = i+1; j < 28; j++)
+        {
+            Plane x;
+            if(planes[i].reqLandTime > planes[j].reqLandTime) {
+                x.planeId = planes[j].planeId;
+                x.priorityId = planes[j].priorityId;
+                x.reqLandTime = planes[j].reqLandTime;
+                planes[j].planeId = planes[i].planeId;
+                planes[j].priorityId = planes[i].priorityId;
+                planes[j].reqLandTime = planes[i].reqLandTime;
+                planes[i].priorityId = x.priorityId;
+                planes[i].reqLandTime = x.reqLandTime;
+                planes[i].planeId = x.planeId;
+            }
+        }
+        
+    }
+    
+}
+
+
 int main() {
     // Create the first and the last element of the linked list.
     front = malloc(sizeof(List));
     rear = malloc(sizeof(List));
     front->next = rear;
+    setTriedCount();
     // Program Started.
+    importInput();
+    sortPlanes();
+    printInputFile();
 }
