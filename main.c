@@ -135,24 +135,52 @@ void importFile() {
     fclose(fptr);
 }
 
+// GLOBAL VALUE FOR READIN FILE FUNCTION
+Plane planes[28];
+
+int sizeInput(FILE * ptr) { // Return size of planes in the input file.
+    if((ptr = fopen(INPUT,"r")) == NULL) {
+        printf("Dosya acilamadi\n");
+    }
+    char temp[100];
+    int count = 0;
+    while(1){
+        fgets(temp,100,ptr);
+        if(strlen(temp) < 5) {
+            break;
+        }
+        else {
+            count++;
+        }
+    }
+    fclose(ptr);
+    return count -1;
+}
+
 void readTheFileYouFkcIdiotC() {
     if((fptr=fopen(INPUT,"r")) == NULL) {
         printf("Dosya Acilamadi.\n");
     }
     else {
-        /*for (int i = 0; i < 24; i++)
+        FILE * ptrForSize;
+        fgets(str,MAX,fptr); // Read the first line of input file. The first line is information line fror columns. 
+        for (int i = 0; i < sizeInput(ptrForSize); i++)
         {
             fgets(str,MAX,fptr);
-            fscanf(,"%d %d %d",str);
-        }*/
-        for (int i = 0; i < 40; i++)
-        {
-            fgets(str,MAX,fptr);
-            printf("%s",str);
+            if(strlen(str) > 4) {
+                //printf("%s",str);
+                sscanf(str,"%d %d %d", &planes[i].priorityId, &planes[i].planeId , &planes[i].reqLandTime);
+                printf("%d ", planes[i].priorityId);
+                printf("%d ", planes[i].planeId);
+                printf("%d \n", planes[i].reqLandTime);
+            }       
         }
-        
     }
     fclose(fptr);
+}
+
+void printPlaneIDs() {
+
 }
 
 int main() {
