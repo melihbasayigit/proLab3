@@ -187,20 +187,23 @@ void sortPlanes() {
 
 
 int main() {
-    Node* pq = newNode(4, 1);
-    push(&pq, 5, 2);
-    push(&pq, 6, 3);
-    push(&pq, 7, 0);
+    setTriedCount();
+    // Program Started.
+    importInput();
+    sortPlanes();
+
+    Node* pq = newNode(planes[0].planeId, planes[0].reqLandTime);
+    for (int i = 1; i < 27; i++)
+    {
+        push(&pq, planes[i].planeId, planes[i].reqLandTime);
+    }
  
     while (!isEmpty(&pq)) {
         printf("%d ", peek(&pq));
         pop(&pq);
     }
-    setTriedCount();
-    // Program Started.
-    importInput();
-    sortPlanes();
-    printInputFile();
+
+    // Listeyi prioritye göre sırala
 
     return 0;
 }
