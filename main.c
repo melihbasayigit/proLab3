@@ -70,7 +70,7 @@ void printAllList(Node ** head) {
         printf("%d ", temp->ID);
         counter++;
     }
-    printf("\n COUNTER :: %d", counter);
+    printf("\nCOUNTER :: %d", counter);
     printf("\n");
 }
 
@@ -261,16 +261,16 @@ int main() {
     // TRY IDNEX OF LAST AND INDEX OF FIRST FUNCTION
 
     // Create first node.
-    Node* pq = newNode(planes[27].planeId);
+    Node* pq = newNode(planes[0].planeId);
     // Add the other nodes.
-    for (int i = 26; i >= 0; i--)
+    for (int i = 1; i < InputSize; i++)
     {
         push(&pq, planes[i].planeId);
     }
     
     printAllList(&pq);
-    deleteElement(&pq,12); 
+    deleteElement(&pq,18); 
     printAllList(&pq);
-    
+
     return 0;
 }
