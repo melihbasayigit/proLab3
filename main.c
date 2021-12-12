@@ -34,11 +34,10 @@ char str[MAX];
 // GLOBAL VALUE FOR READ TO FILE FUNCTION
 Plane planes[28];
 
-Node* newNode(int d, int p)
+Node* newNode(int d)
 {
     Node* temp = (Node*)malloc(sizeof(Node));
     temp->ID = d;
-    temp->priority = p;
     temp->next = NULL;
  
     return temp;
@@ -56,23 +55,13 @@ void pop(Node** head)
     free(temp);
 }
 
-void push(Node** head, int d, int p)
+void push(Node** head, int d)
 {
     Node* start = (*head);
-     Node* temp = newNode(d, p);
-    if ((*head)->priority > p) {
- 
-        temp->next = *head;
-        (*head) = temp;
-    }
-    else {
-        while (start->next != NULL &&
-            start->next->priority < p) {
-            start = start->next;
-        }
-        temp->next = start->next;
-        start->next = temp;
-    }
+    Node* temp = newNode(d);
+    temp->next = *head;
+    (*head) = temp;
+    
 }
 
 int isEmpty(Node** head)
@@ -163,9 +152,10 @@ void writeOutputFile(FILE * ptr) {
 }
 
 void sortPlanes() {
-    for (int i = 0; i < 28; i++)
+    FILE * ptr;
+    for (int i = 0; i < sizeInput(ptr); i++)
     {
-        for (int j = i+1; j < 28; j++)
+        for (int j = i+1; j < sizeInput(ptr); j++)
         {
             Plane x;
             if(planes[i].reqLandTime > planes[j].reqLandTime) {
@@ -179,31 +169,64 @@ void sortPlanes() {
                 planes[i].reqLandTime = x.reqLandTime;
                 planes[i].planeId = x.planeId;
             }
+            else if (planes[i].reqLandTime == planes[j].reqLandTime) {
+                if(planes[i].priorityId > planes[j].priorityId) {
+                    Plane y;
+                    y.planeId = planes[j].planeId;
+                    y.priorityId = planes[j].priorityId;
+                    planes[j].planeId = planes[i].planeId;
+                    planes[j].priorityId = planes[i].priorityId;
+                    planes[i].priorityId = y.priorityId;
+                    planes[i].planeId = y.planeId;
+                }
+            }
         }
         
     }
     
 }
 
+int IndexOfLast() {
+    FILE * ptr;
+    for (int i = 27; i >= 0; i--)
+    {
+        if(Time == planes[i].reqLandTime) {
+            return i;
+        }
+    }
+    
+}
+
+int IndexOfFirst() {
+    FILE * ptr;
+    for (int i = 0; i < sizeInput(ptr); i++)
+    {
+        if(Time == planes[i].reqLandTime) {
+            return i;
+        }
+    }
+}
 
 int main() {
     setTriedCount();
     // Program Started.
     importInput();
     sortPlanes();
-
-    Node* pq = newNode(planes[0].planeId, planes[0].reqLandTime);
-    for (int i = 1; i < 27; i++)
+    printInputFile();
+    printf("\n\n");
+    
+    // Create first node.
+    Node* pq = newNode(planes[27].planeId);
+    // Add the other nodes.
+    for (int i = 26; i >= 0; i--)
     {
-        push(&pq, planes[i].planeId, planes[i].reqLandTime);
+        push(&pq, planes[i].planeId);
     }
- 
+    
     while (!isEmpty(&pq)) {
         printf("%d ", peek(&pq));
         pop(&pq);
     }
-
-    // Listeyi prioritye göre sırala
 
     return 0;
 }
