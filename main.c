@@ -19,7 +19,6 @@ struct PlaneClass {
 
 typedef struct node {
     int ID;
-    int priority;
  
     struct node* next;
 } Node;
@@ -28,11 +27,15 @@ typedef struct PlaneClass Plane;
 
 // GLOBAL VARIABLES
 bool IsDayCompleted = false; 
-FILE *fptr; // File pointer for input.txt .. The file will be used in many lines and methods.
+FILE *fptr; FILE *ptr;// File pointer for input.txt .. The file will be used in many lines and methods.
+int InputSize = MAX;
 int Time = 1;
 char str[MAX];
 // GLOBAL VALUE FOR READ TO FILE FUNCTION
 Plane planes[28];
+
+// DEFINE FUNC FIRST
+int findIndexByID(int id);
 
 Node* newNode(int d)
 {
@@ -55,13 +58,49 @@ void pop(Node** head)
     free(temp);
 }
 
+void printAllList(Node ** head) {
+    int counter = 0;
+    Node * temp = *head;
+    if((*head) != NULL) {
+        printf("%d ", (*head)->ID);
+        counter++;
+    }
+    while(temp->next != NULL) {
+        temp = temp->next;
+        printf("%d ", temp->ID);
+        counter++;
+    }
+    printf("\n COUNTER :: %d", counter);
+    printf("\n");
+}
+
+void deleteElement(Node** head, int id)
+{
+    Node* temp = *head;
+    // find it
+    if (temp->ID == id) { // search the head
+        (*head) = (*head)->next;
+        free(temp);
+    }
+    else {
+        Node * del;
+        while((temp->next)->ID != id) {
+            temp = temp->next;
+        }
+        del = temp->next;
+        // delete it
+        temp->next = temp->next->next;
+        free(del);
+    }    
+}
+
 void push(Node** head, int d)
 {
     Node* start = (*head);
     Node* temp = newNode(d);
+ 
     temp->next = *head;
     (*head) = temp;
-    
 }
 
 int isEmpty(Node** head)
@@ -77,7 +116,7 @@ void timeUp() {
     }
 }
 
-int sizeInput(FILE * ptr) { // Return size of planes in the input file.
+int sizeInput() { // Return size of planes in the input file.
     if((ptr = fopen(INPUT,"r")) == NULL) {
         printf("Dosya acilamadi\n");
     }
@@ -97,8 +136,7 @@ int sizeInput(FILE * ptr) { // Return size of planes in the input file.
 }
 
 void setTriedCount() {
-    FILE * ptr;
-    for (int i = 0; i < sizeInput(ptr); i++)
+    for (int i = 0; i < InputSize; i++)
     {
         planes[i].triedLandCount = 0;   
     }
@@ -109,9 +147,8 @@ void importInput() {
         printf("Dosya Acilamadi.\n");
     }
     else {
-        FILE * ptrForSize;
         fgets(str,MAX,fptr); // Read the first line of input file. The first line is information line fror columns. 
-        for (int i = 0; i < sizeInput(ptrForSize); i++)
+        for (int i = 0; i < InputSize; i++)
         {
             fgets(str,MAX,fptr);
             if(strlen(str) > 4) {
@@ -123,8 +160,7 @@ void importInput() {
 }
 
 void printInputFile() {
-    FILE * ptr;
-    for (int i = 0; i < sizeInput(ptr); i++)
+    for (int i = 0; i < InputSize; i++)
     {
         printf("%d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime);
     }
@@ -138,7 +174,7 @@ void printOutputFile() {
     }
 }
 
-void writeOutputFile(FILE * ptr) {
+void writeOutputFile() {
     if((ptr = fopen(OUTPUT,"w")) == NULL) {
         printf("Dosya acilamadi.\n");
     }
@@ -152,10 +188,9 @@ void writeOutputFile(FILE * ptr) {
 }
 
 void sortPlanes() {
-    FILE * ptr;
-    for (int i = 0; i < sizeInput(ptr); i++)
+    for (int i = 0; i < InputSize; i++)
     {
-        for (int j = i+1; j < sizeInput(ptr); j++)
+        for (int j = i+1; j < InputSize; j++)
         {
             Plane x;
             if(planes[i].reqLandTime > planes[j].reqLandTime) {
@@ -186,9 +221,17 @@ void sortPlanes() {
     
 }
 
+int findIndexByID(int id) {
+    for (int i = 0; i < InputSize; i++)
+    {
+        if(planes[i].planeId == id) {
+            return i;
+        }
+    }
+}
+
 int IndexOfLast() {
-    FILE * ptr;
-    for (int i = 27; i >= 0; i--)
+    for (int i = InputSize - 1; i >= 0; i--)
     {
         if(Time == planes[i].reqLandTime) {
             return i;
@@ -198,8 +241,7 @@ int IndexOfLast() {
 }
 
 int IndexOfFirst() {
-    FILE * ptr;
-    for (int i = 0; i < sizeInput(ptr); i++)
+    for (int i = 0; i < InputSize; i++)
     {
         if(Time == planes[i].reqLandTime) {
             return i;
@@ -208,6 +250,7 @@ int IndexOfFirst() {
 }
 
 int main() {
+    InputSize = sizeInput();
     setTriedCount();
     // Program Started.
     importInput();
@@ -215,6 +258,8 @@ int main() {
     printInputFile();
     printf("\n\n");
     
+    // TRY IDNEX OF LAST AND INDEX OF FIRST FUNCTION
+
     // Create first node.
     Node* pq = newNode(planes[27].planeId);
     // Add the other nodes.
@@ -223,10 +268,9 @@ int main() {
         push(&pq, planes[i].planeId);
     }
     
-    while (!isEmpty(&pq)) {
-        printf("%d ", peek(&pq));
-        pop(&pq);
-    }
-
+    printAllList(&pq);
+    deleteElement(&pq,12); 
+    printAllList(&pq);
+    
     return 0;
 }
