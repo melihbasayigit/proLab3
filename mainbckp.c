@@ -321,18 +321,6 @@ void addTakeOffQueue(Node ** head, int id) {
 
 }
 
-void transferLastPlanes() {
-    for (int i = 0; i < InputSize; i++)
-    {
-        if(planes[i].LandTime == 0) {
-            planes[i].LandTime = 99;
-            totalTransportFlight++;
-            printf("%d idli ucak icin: gunluk izin verilen ucak sayisi 24'u gectigi icin artik izin verilememektedir.\n",planes[i].planeId);
-        }
-    }
-    printf("\n");
-}
-
 void transferPlane(Node ** head, int id) {
     printAllList(head);
     printf("\n%d id li ucak Sabiha Gokcen havalimanina yonlendirilmistir.\n", id);
@@ -343,7 +331,7 @@ void transferPlane(Node ** head, int id) {
 }
 
 void landFlight(Node ** head, int id) {
-    printAllList(head);
+    //printAllList(head);
     printf("%d id li ucak inis yapti\n", id);
     deleteElement(&(*head),id);
     int idIndex = findIndexByID(id);
@@ -362,7 +350,7 @@ void addlandQueue2(Node ** head) {
         // Sadece birkacina izin ver.
     }
     else if(totalTransportFlight + totalFlightInDay > 24) {
-        printf("Gunluk izin verilen ucak sayisi 24'u gectigi icin artık izin verilememektedir.\n");
+        printf("Gunluk izin verilen ucak sayisi 24'u gectigi icin artık izin verilememektedir.");
         IsDayCompleted = true;
     }
     else {
@@ -379,13 +367,9 @@ void addlandQueue2(Node ** head) {
 }
 
 void addlandQueue(Node ** head) {
-    Node * temp = *head;
     for (int i = IndexOfFirst(); i < IndexOfLast() +1 ; i++)
     {
         push(&(*head), planes[i].planeId);
-    }
-    if(temp->ID == -1) {
-        deleteElement(head,-1);
     }
 }
 
@@ -534,10 +518,10 @@ int main() {
         }
         timeUp();
     }
-    transferLastPlanes();
-    sortOutputPlanes();
     printTried();
-    totalFlightInDay++;
+    /*if(totalFlightInDay > 24) {
+        totalFlightInDay = 24;
+    }*/
     printf("\nInen toplam ucak sayisi: %d\n",totalFlightInDay);
     printf("\nYonlendirilen toplam ucak sayisi: %d\n",totalTransportFlight);
     return 0;
