@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #define INPUT "input.txt"
 #define OUTPUT "output.txt"
-#define TEMP "temp.txt"
-#define MAX 256
+#define MAX 3000
 
 struct PlaneClass {
     int priorityId;
@@ -33,9 +32,8 @@ int Time = 1;
 int totalTransportFlight = 0;
 int totalFlightInDay = 0;
 char str[MAX];
-Node * tqGlobal = NULL;
 // GLOBAL VALUE FOR READ TO FILE FUNCTION
-Plane planes[28];
+Plane * planes;
 
 // DEFINE FUNC FIRST
 int findIndexByID(int id);
@@ -126,7 +124,7 @@ int isEmpty(Node** head)
 void timeUp() {
     Time++;
     if(Time == 25) {
-        Time = 0;
+        Time = 1;
         IsDayCompleted = true;
     }
 }
@@ -189,7 +187,7 @@ void printInputFile() {
 void printOutputFile() {
     for (int i = 0; i < InputSize; i++) 
     {
-        printf("%d %d %d %d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
+        printf("%d\t %d\t %d\t \t%d \t%d \t%d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
     }
 }
 
@@ -238,7 +236,7 @@ void sortPlanes() {
                 planes[i].planeId = x.planeId;
             }
             else if (planes[i].reqLandTime == planes[j].reqLandTime) {
-                if(planes[i].priorityId <= planes[j].priorityId) {
+                if(planes[i].priorityId > planes[j].priorityId) { // if there is a problem with sorting change this (>) to this (<=). *DEBUG HERE DON'T FORGET IT. 
                     Plane y;
                     y.planeId = planes[j].planeId;
                     y.priorityId = planes[j].priorityId;
@@ -308,6 +306,25 @@ int IndexOfLast() {
     
 }
 
+int IndexOfLastLandT() {
+    for (int i = InputSize - 1; i >= 0; i--)
+    {
+        if(Time == planes[i].LandTime + 1) {
+            return i;
+        }
+    }
+    
+}
+
+int IndexOfFirstLandT() {
+    for (int i = 0; i < InputSize; i++)
+    {
+        if(Time == planes[i].LandTime + 1) {
+            return i;
+        }
+    }
+}
+
 int IndexOfFirst() {
     for (int i = 0; i < InputSize; i++)
     {
@@ -317,8 +334,23 @@ int IndexOfFirst() {
     }
 }
 
-void addTakeOffQueue(Node ** head, int id) {
+/*void addTakeOffQueue(Node ** head) {
+    Node * temp = *head;
+    for (int i = IndexOfFirstLandT(); i < IndexOfLastLandT() +1 ; i++)
+    {
+        push(&(*head), planes[i].planeId);
+    }
+    if(temp->ID == -1) {
+        deleteElement(head,-1);
+    }
+}*/
 
+void addTakeOffQueue(Node ** head, int id) {
+    Node * temp = *head;
+    push(&(*head), id);
+    if(temp->ID == -1) {
+        deleteElement(head,-1);
+    }
 }
 
 void transferLastPlanes() {
@@ -352,6 +384,14 @@ void landFlight(Node ** head, int id) {
     totalFlightInDay++;
 }
 
+void takeFlight(Node ** head, int id) {
+    printAllList(head);
+    printf("%d id li ucak kalkis yapti\n", id);
+    deleteElement(&(*head),id);
+    int idIndex = findIndexByID(id);
+    planes[idIndex].takeOffTime = Time;
+}
+
 void addlandQueue2(Node ** head) {
     int c = 0;
     for (int i = IndexOfFirst(); i < IndexOfLast() +1 ; i++)
@@ -362,7 +402,7 @@ void addlandQueue2(Node ** head) {
         // Sadece birkacina izin ver.
     }
     else if(totalTransportFlight + totalFlightInDay > 24) {
-        printf("Gunluk izin verilen ucak sayisi 24'u gectigi icin artık izin verilememektedir.\n");
+        printf("Gunluk izin verilen ucak sayisi 24'u gectigi icin artik izin verilememektedir.\n");
         IsDayCompleted = true;
     }
     else {
@@ -401,11 +441,10 @@ void delayAllQueue(Node **head) {
     }
 }
 
-void StartFlights(Node **head) {
+void StartFlights(Node **head, Node ** takeOffHead) {
     if(Time > 1) {
         addlandQueue(&(*head));
     }
-    //printAllList(head);
     Node* temp = *head;
     bool landComp = false;
     // check tried counts 
@@ -507,37 +546,60 @@ void StartFlights(Node **head) {
         }
     }
     delayAllQueue(&(*head));
+    //take off
 }
 
 int main() {
+    planes = malloc(sizeof(Plane)*MAX);
     InputSize = sizeInput();
+    importInput();
+    realloc(planes, sizeof(Plane) * InputSize);
     setTriedCount();
     // Program Started.
     importInput();
     sortPlanes();
-    //printInputFile();
     printf("\n\n");
-        
     // Create first node.
     Node* pq = newNode(planes[0].planeId); // add the first element of the list.
-    for (int i = 1; i < 4; i++) // at 1 am.
+    for (int i = 1; i < IndexOfLast() + 1; i++) // at 1 am.
     {
         push(&pq, planes[i].planeId);
     }
+    Node * tq = newNode(-1);
     //start here.
-    for (int i = 0; i < 24; i++)
+    for (int i = 0; i < 25; i++)
     {
-        StartFlights(&pq);
-        printf("\n");
-        if(i != 0) {
-            //Start Take Off queue.
+        if(i==24) {
+            // SADECE KALKIS YAP
+        }
+        else {
+            StartFlights(&pq,&tq);
+            printf("\n");
+            timeUp();
+        }
+    }
+    transferLastPlanes();
+    setTriedCount();
+    Time = 1;
+    for (int x = 0; x < 25; x++)
+    {
+        for (int i = 0; i < InputSize; i++)
+        {
+            if(planes[i].LandTime == 24) {
+                planes[i].takeOffTime = 1;
+            }
+            else if(planes[i].LandTime + 1 == Time) {
+                //printAllList(&tq);
+                //addTakeOffQueue(&tq,planes[i].planeId);
+                planes[i].takeOffTime = Time;
+            }
         }
         timeUp();
     }
-    transferLastPlanes();
+    
+      
     sortOutputPlanes();
-    printTried();
-    totalFlightInDay++;
+    printOutputFile();
     printf("\nInen toplam ucak sayisi: %d\n",totalFlightInDay);
     printf("\nYonlendirilen toplam ucak sayisi: %d\n",totalTransportFlight);
     return 0;
