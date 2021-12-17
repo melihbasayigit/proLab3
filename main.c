@@ -71,7 +71,7 @@ void printAllList(Node ** head) {
         printf("%d ", temp->ID);
         counter++;
     }
-    printf("\nCOUNTER :: %d", counter);
+    printf("\nSIRADAKI UCAK SAYISI: %d", counter);
     printf("\n");
 }
 
@@ -273,10 +273,12 @@ void addTakeOffQueue(Node ** head, int id) {
 }
 
 void transferPlane(Node ** head, int id) {
-    printf("%d id li ucak Sabiha gokcene transfer edildi.\n");
+    printf("%d id li ucak Sabiha Gokcen havalimanina yonlendirilmistir.\n", id);
     deleteElement(&(*head),id);
     int idIndex = findIndexByID(id);
     planes[idIndex].LandTime = -1;
+    totalFlightInDay++;
+    printAllList(head);
 }
 
 void landFlight(Node ** head, int id) {
@@ -285,6 +287,8 @@ void landFlight(Node ** head, int id) {
     int idIndex = findIndexByID(id);
     planes[idIndex].LandTime = Time;
     planes[idIndex].delayTime = planes[idIndex].LandTime - planes[idIndex].reqLandTime;
+    totalFlightInDay++;
+    printAllList(head);
 }
 
 void addlandQueue(Node ** head) {
@@ -321,132 +325,114 @@ void StartFlights(Node **head) {
     if(Time > 1) {
         addlandQueue(&(*head));
     }
+    //printAllList(head);
     Node* temp = *head;
-    // find it
-    int searchCount = 0;
-    bool searchFailed = false;
-    bool found = false; // the correct time was found.
-    while(!found) {
-        if(planes[findIndexByID(temp->ID)].reqLandTime == Time || searchFailed == true) {
-            found = true;
-            bool landComp = false;
-
-
-
-
-            // check tried counts 
-            Node * checkFor3 = temp;
-            int countof3 = 0;
-            while (checkFor3 != NULL) {
-                if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
-                    countof3++;
-                }
-                checkFor3 = checkFor3->next;
+    bool landComp = false;
+    // check tried counts 
+    Node * checkFor3 = temp;
+    int countof3 = 0;
+    while (checkFor3 != NULL) {
+        if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
+            countof3++;
+        }
+        checkFor3 = checkFor3->next;
+    }
+    if(countof3 == 0) {
+        // 3 KONTROLU NEGATIF
+    } 
+    else if (countof3 == 1) {
+        // 3 KONTROLU VAR SADECE BIR UCAK
+        printf("3 KONT VAR SADECE BIR UCAK\n");
+        checkFor3 = temp;
+        while (checkFor3 != NULL)
+        {
+            if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
+                landFlight(head,checkFor3->ID);
+                landComp = true;
+                break;
             }
-            if(countof3 == 0) {
-                // 3 KONTROLU NEGATIF
-                printf("\nNEGATIF\n");
-            } 
-            else if (countof3 == 1) {
-                // 3 KONTROLU VAR SADECE BIR UCAK
-                printf("3 KONT VAR SADECE BIR UCAK\n");
+            checkFor3 = checkFor3->next;
+        }
+    }
+    else {
+        // ID'SI KUCUK OLANI BUL VE INDIR.
+        checkFor3 = temp;
+        int minTempID = MAX;
+        while(checkFor3 != NULL) {
+            if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
+                if(checkFor3->ID < minTempID) {
+                    minTempID = checkFor3->ID;
+                }
+            }
+            checkFor3 = checkFor3->next;
+        }
+        landFlight(head,minTempID);
+        landComp = true;
+        // KALANLARI AKTAR
+        checkFor3 = temp;
+        int countWhile = 0;
+        while(checkFor3 != NULL) {
+            if (countWhile >= 2500) {
+                break;
+            }
+            if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
+                transferPlane(head,checkFor3->ID);
                 checkFor3 = temp;
-                while (checkFor3 != NULL)
-                {
-                    if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
-                        landFlight(head,checkFor3->ID);
+            }
+            checkFor3 = checkFor3->next;
+        }
+    }
+    // 3 KONTROLU NEGATIF ISE
+
+
+
+    for (int u = 1; u < 5; u++) // priority from 1 to 4.
+    {
+        if(landComp == false) {
+            Node * checkForPri = temp;
+            int countPri = 0;
+            while(checkForPri != NULL) {
+                if(planes[findIndexByID(checkForPri->ID)].priorityId == u) {
+                    countPri++;
+                }
+                checkForPri = checkForPri->next;
+            }
+            if(countPri == 0) {
+                // DIGER ONCELIKLERI KONTROL ET.
+            }
+            else if(countPri == 1) {
+                checkForPri = temp;
+                while(checkForPri != NULL) {
+                    if(planes[findIndexByID(checkForPri->ID)].priorityId == u) {
+                        landFlight(head,checkForPri->ID);
                         landComp = true;
                         break;
                     }
-                    checkFor3 = checkFor3->next;
+                    checkForPri = checkForPri->next;
                 }
             }
             else {
-                printf("IDSI KUCUK OLAN BULUNUYOR\n");
-                // ID'SI KUCUK OLANI BUL VE INDIR.
-                checkFor3 = temp;
+                checkForPri = temp;
                 int minTempID = MAX;
-                while(checkFor3 != NULL) {
-                    if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
-                        if(checkFor3->ID < minTempID) {
-                            minTempID = checkFor3->ID;
+                while(checkForPri != NULL) {
+                    if(planes[findIndexByID(checkForPri->ID)].priorityId == u) {
+                        if(checkForPri->ID < minTempID) {
+                            minTempID = checkForPri->ID;
                         }
                     }
-                    checkFor3 = checkFor3->next;
+                    checkForPri = checkForPri->next;
                 }
+                // ID'SI KUCUK OLANI INDIR
                 landFlight(head,minTempID);
                 landComp = true;
-                // KALANLARI AKTAR
-                checkFor3 = temp;
-                while(checkFor3 != NULL) {
-                    if(planes[findIndexByID(checkFor3->ID)].triedLandCount == 3) {
-                        transferPlane(head,checkFor3->ID);
-                        printf("!! UCAK SABIHA GOKCEN HAVA LIMANINA YONLENDIRILMISTIR\n");
-                    }
-                    checkFor3 = checkFor3->next;
-                }
-            }
-            // 3 KONTROLU NEGATIF ISE
-            for (int u = 1; u < 5; u++) // priority from 1 to 4.
-            {
-                if(landComp == false) {
-                    Node * checkForPri = temp;
-                    int countPri = 0;
-                    while(checkForPri != NULL) {
-                        if(planes[findIndexByID(checkForPri->ID)].priorityId == u) {
-                            countPri++;
-                        }
-                        checkForPri = checkForPri->next;
-                    }
-                    if(countPri == 0) {
-                        // DIGER ONCELIKLERI KONTROL ET.
-                    }
-                    else if(countPri == 1) {
-                        checkForPri = temp;
-                        while(checkForPri != NULL) {
-                            if(planes[findIndexByID(checkForPri->ID)].priorityId == u) {
-                                landFlight(head,checkForPri->ID);
-                                landComp = true;
-                                break;
-                            }
-                            checkForPri = checkForPri->next;
-                        }
-                    }
-                    else {
-                        checkForPri = temp;
-                        int minTempID = MAX;
-                        while(checkForPri != NULL) {
-                            if(planes[findIndexByID(checkForPri->ID)].priorityId == u) {
-                                if(checkForPri->ID < minTempID) {
-                                    minTempID = checkForPri->ID;
-                                }
-                            }
-                            checkForPri = checkForPri->next;
-                        }
-                        // ID'SI KUCUK OLANI INDIR
-                        landFlight(head,minTempID);
-                        landComp = true;
-                    }
-                }
-            }
-        }
-        temp = temp->next;
-        searchCount++;
-        if(searchCount >= 250 && *head != NULL) {
-            searchFailed = true;
-            temp = *head;
-        }
-        else if(searchCount >= 250) {
-            if(isEmpty(&(*head))) {
-                printf("\nProgram Tamamlanmistir. !!!\n");
-                found = true;
-                break;
             }
         }
     }
+
+
+
+
     
-
-
     delayAllQueue(&(*head));
 }
 
@@ -466,15 +452,17 @@ int main() {
         push(&pq, planes[i].planeId);
     }
     
-    for (int i = 0; i < 10; i++)
+
+    //start here.
+    for (int i = 0; i < 5; i++)
     {
         StartFlights(&pq);
         printf("\n");
-        //startTakeOffQueue
+        if(i != 0) {
+            //Start Take Off queue.
+        }
         timeUp();
-        printAllList(&pq);
     }
-    printAllList(&pq);
-    //printTried();
+    printTried();
     return 0;
 }
