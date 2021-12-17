@@ -175,7 +175,15 @@ void printInputFile() {
 void printOutputFile() {
     for (int i = 0; i < 24; i++) //change int 24 to plane number.
     {
-        printf("%d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime);
+        printf("%d %d %d %d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
+    }
+}
+
+void printTried() {
+    for (int i = 0; i < 24; i++) //change int 24 to plane number.
+    {
+        printf("%d %d %d %d %d %d %d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, 
+                planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime, planes[i].triedLandCount);
     }
 }
 
@@ -186,8 +194,14 @@ void writeOutputFile() {
     fputs("oncelik_id ucak_id, talep_edilen_inis_saati, inis_saati, gecikme_suresi, kalkis_saati\n", ptr);
     for (int i = 0; i < 24; i++)
     {
-        fprintf(ptr,"%d %d %d %d %d %d\n", planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, 
+        if(planes[i].LandTime == -1) {
+            fprintf(ptr,"%d %d %d %s\n", planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, 
+                                        "Ucak Sabiha gokcen hava limanina yonlendirilmistir.");
+        }
+        else {
+            fprintf(ptr,"%d %d %d %d %d %d\n", planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, 
                                         planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
+        }
     }
     fclose(ptr);
 }
@@ -259,13 +273,18 @@ void addTakeOffQueue(Node ** head, int id) {
 }
 
 void transferPlane(Node ** head, int id) {
-    printf("%d li ucak Sabiha gokcene transfer edildi.\n");
-    deleteElement(&(*head),12);
+    printf("%d id li ucak Sabiha gokcene transfer edildi.\n");
+    deleteElement(&(*head),id);
+    int idIndex = findIndexByID(id);
+    planes[idIndex].LandTime = -1;
 }
 
 void landFlight(Node ** head, int id) {
-    printf("%d li ucak inis yapti\n", id);
+    printf("%d id li ucak inis yapti\n", id);
     deleteElement(&(*head),id);
+    int idIndex = findIndexByID(id);
+    planes[idIndex].LandTime = Time;
+    planes[idIndex].delayTime = planes[idIndex].LandTime - planes[idIndex].reqLandTime;
 }
 
 void addlandQueue(Node ** head) {
@@ -275,14 +294,46 @@ void addlandQueue(Node ** head) {
     }
 }
 
+void delayAllQueue(Node **head) {
+    Node * temp = *head;
+    //find it
+    bool found = false;
+    while(!found) {
+        if(temp == NULL) {
+            break;
+        }
+        if(planes[findIndexByID(temp->ID)].reqLandTime == Time) {
+            break;
+        }
+        temp = temp->next;
+    }
+    bool comp = false;
+    while(!comp) {
+        if(temp == NULL) {
+            break;
+        }
+        planes[findIndexByID(temp->ID)].triedLandCount++;
+        temp = temp->next;
+    }
+}
+
 void StartFlights(Node **head) {
+    if(Time > 1) {
+        addlandQueue(&(*head));
+    }
     Node* temp = *head;
     // find it
+    int searchCount = 0;
+    bool searchFailed = false;
     bool found = false; // the correct time was found.
     while(!found) {
-        if(planes[findIndexByID(temp->ID)].reqLandTime == Time) {
+        if(planes[findIndexByID(temp->ID)].reqLandTime == Time || searchFailed == true) {
             found = true;
             bool landComp = false;
+
+
+
+
             // check tried counts 
             Node * checkFor3 = temp;
             int countof3 = 0;
@@ -294,9 +345,11 @@ void StartFlights(Node **head) {
             }
             if(countof3 == 0) {
                 // 3 KONTROLU NEGATIF
+                printf("\nNEGATIF\n");
             } 
             else if (countof3 == 1) {
                 // 3 KONTROLU VAR SADECE BIR UCAK
+                printf("3 KONT VAR SADECE BIR UCAK\n");
                 checkFor3 = temp;
                 while (checkFor3 != NULL)
                 {
@@ -309,6 +362,7 @@ void StartFlights(Node **head) {
                 }
             }
             else {
+                printf("IDSI KUCUK OLAN BULUNUYOR\n");
                 // ID'SI KUCUK OLANI BUL VE INDIR.
                 checkFor3 = temp;
                 int minTempID = MAX;
@@ -333,7 +387,7 @@ void StartFlights(Node **head) {
                 }
             }
             // 3 KONTROLU NEGATIF ISE
-            for (int u = 1; u < 5; u++)
+            for (int u = 1; u < 5; u++) // priority from 1 to 4.
             {
                 if(landComp == false) {
                     Node * checkForPri = temp;
@@ -377,7 +431,23 @@ void StartFlights(Node **head) {
             }
         }
         temp = temp->next;
+        searchCount++;
+        if(searchCount >= 250 && *head != NULL) {
+            searchFailed = true;
+            temp = *head;
+        }
+        else if(searchCount >= 250) {
+            if(isEmpty(&(*head))) {
+                printf("\nProgram Tamamlanmistir. !!!\n");
+                found = true;
+                break;
+            }
+        }
     }
+    
+
+
+    delayAllQueue(&(*head));
 }
 
 int main() {
@@ -386,23 +456,25 @@ int main() {
     // Program Started.
     importInput();
     sortPlanes();
-    printInputFile();
+    //printInputFile();
     printf("\n\n");
         
     // Create first node.
-    Node* pq = newNode(planes[0].planeId);
-    for (int i = 1; i < 4; i++) // add at 1
+    Node* pq = newNode(planes[0].planeId); // add the first element of the list.
+    for (int i = 1; i < 4; i++) // at 1 am.
     {
         push(&pq, planes[i].planeId);
     }
-    // Add the other nodes.
-    for (int i = 0; i < 3; i++)
+    
+    for (int i = 0; i < 10; i++)
     {
-        printAllList(&pq);
         StartFlights(&pq);
         printf("\n");
+        //startTakeOffQueue
         timeUp();
+        printAllList(&pq);
     }
-    
+    printAllList(&pq);
+    //printTried();
     return 0;
 }
