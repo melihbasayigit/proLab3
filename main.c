@@ -29,6 +29,8 @@ bool IsDayCompleted = false;
 FILE *fptr; FILE *ptr;// File pointer for input.txt .. The file will be used in many lines and methods.
 int InputSize = MAX;
 int Time = 1;
+int lastLandId = 0;
+Node * tqGlobal = NULL;
 int totalTransportFlight = 0;
 int totalFlightInDay = 0;
 char str[MAX];
@@ -55,8 +57,13 @@ int peek(Node** head)
 void pop(Node** head)
 {
     Node* temp = *head;
-    (*head) = (*head)->next;
-    free(temp);
+    if(temp->next == NULL) {
+        temp->ID = -1;
+    }
+    else {
+        (*head) = (*head)->next;
+        free(temp);
+    }
 }
 
 void printAllList(Node ** head) {
@@ -78,6 +85,24 @@ void printAllList(Node ** head) {
             counter++;
         }
         printf("\nSIRADAKI UCAK SAYISI: %d", counter);
+    }
+    printf("\n");
+}
+
+void printTqAllList(Node ** head) {
+    Node * temp = *head;
+    if((*head) != NULL) {
+        if((*head)->ID == -1) {
+            printf("BOS");
+        }
+        else {
+            printf("%d ", (*head)->ID);
+        }
+    }
+    while(temp->next != NULL) {
+        temp = temp->next;
+        if(temp->ID != -1) 
+            printf("%d ", temp->ID);
     }
     printf("\n");
 }
@@ -185,6 +210,7 @@ void printInputFile() {
 }
 
 void printOutputFile() {
+    printf("OUTPUT DOSYASI YAZDIRILIYOR\n\n");
     for (int i = 0; i < InputSize; i++) 
     {
         printf("%d\t %d\t %d\t \t%d \t%d \t%d\n",planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
@@ -201,6 +227,23 @@ void printTried() {
 
 void writeOutputFile() {
     if((ptr = fopen(OUTPUT,"w")) == NULL) {
+        printf("Dosya acilamadi.\n");
+    }
+    fputs("oncelik_id ucak_id, talep_edilen_inis_saati, inis_saati, gecikme_suresi, kalkis_saati\n", ptr);
+    for (int i = 0; i < InputSize; i++)
+    {
+        if(planes[i].LandTime == 99) {
+        }
+        else {
+            fprintf(ptr,"%d %d %d %d %d %d\n", planes[i].priorityId, planes[i].planeId, planes[i].reqLandTime, 
+                                        planes[i].LandTime, planes[i].delayTime, planes[i].takeOffTime);
+        }
+    }
+    fclose(ptr);
+}
+
+void writeOutput2File() {
+    if((ptr = fopen("output_ext.txt","w")) == NULL) {
         printf("Dosya acilamadi.\n");
     }
     fputs("oncelik_id ucak_id, talep_edilen_inis_saati, inis_saati, gecikme_suresi, kalkis_saati\n", ptr);
@@ -328,8 +371,10 @@ void transferLastPlanes() {
 }
 
 void transferPlane(Node ** head, int id) {
+    printf("INIS KUYRUGU: ");
     printAllList(head);
-    printf("\n%d id li ucak Sabiha Gokcen havalimanina yonlendirilmistir.\n", id);
+    printf("%d idli ucagin acil inis yapmasindan dolayi:\n",lastLandId);
+    printf("%d id li ucak Sabiha Gokcen havalimanina yonlendirilmistir.\n", id);
     deleteElement(&(*head),id);
     int idIndex = findIndexByID(id);
     planes[idIndex].LandTime = 99;
@@ -337,6 +382,7 @@ void transferPlane(Node ** head, int id) {
 }
 
 void landFlight(Node ** head, int id) {
+    printf("INIS KUYRUGU: ");
     printAllList(head);
     printf("%d id li ucak inis yapti\n", id);
     deleteElement(&(*head),id);
@@ -344,6 +390,10 @@ void landFlight(Node ** head, int id) {
     planes[idIndex].LandTime = Time;
     planes[idIndex].delayTime = planes[idIndex].LandTime - planes[idIndex].reqLandTime;
     totalFlightInDay++;
+    lastLandId = id;
+    push(&tqGlobal,lastLandId);
+    if(Time == 2) 
+        deleteElement(&tqGlobal,-1);
 }
 
 void takeFlight(Node ** head, int id) {
@@ -380,6 +430,7 @@ void delayAllQueue(Node **head) {
 void StartFlights(Node **head, Node ** takeOffHead) {
     if(Time > 1) {
         addlandQueue(&(*head));
+        printf("%d idli ucak kalkis yapmistir.\n",lastLandId);
     }
     Node* temp = *head;
     bool landComp = false;
@@ -502,6 +553,7 @@ int main() {
         push(&pq, planes[i].planeId);
     }
     Node * tq = newNode(-1);
+    tqGlobal = tq;
     //start here.
     for (int i = 0; i < 25; i++)
     {
@@ -511,8 +563,11 @@ int main() {
         else {
             whatIsTime();
             StartFlights(&pq,&tq);
+            printf("KALKIS KUYRUGU: ");
+            printTqAllList(&tqGlobal);
             printf("\n");
             timeUp();
+            pop(&tqGlobal);
         }
     }
     transferLastPlanes();
@@ -534,7 +589,9 @@ int main() {
     sortOutputPlanes();
     printOutputFile();
     writeOutputFile();
+    writeOutput2File();
     printf("\nInen toplam ucak sayisi: %d\n",totalFlightInDay);
-    printf("\nYonlendirilen toplam ucak sayisi: %d\n",totalTransportFlight);
+    printf("\nSabiha Gokcen Havalimanina yonlendirilen toplam ucak sayisi: %d\n",totalTransportFlight);
+    
     return 0;
 }
