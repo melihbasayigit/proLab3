@@ -556,7 +556,7 @@ int main() {
     realloc(planes, sizeof(Plane) * InputSize);
     setTriedCount();
     // Program Started.
-    printf("INPUT DOSYASI OKUNUYOR...\n");
+    printf("INPUT DOSYASI OKUNUYOR...\n\n");
     printInputFile();
     sortPlanes();
     printf("\n\n");
@@ -601,6 +601,7 @@ int main() {
       
     sortOutputPlanes();
     printOutputFile();
+    writeOutputFile();
     printf("\nInen toplam ucak sayisi: %d\n",totalFlightInDay);
     printf("\nYonlendirilen toplam ucak sayisi: %d\n",totalTransportFlight);
     return 0;
