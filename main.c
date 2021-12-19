@@ -556,7 +556,8 @@ int main() {
     realloc(planes, sizeof(Plane) * InputSize);
     setTriedCount();
     // Program Started.
-    importInput();
+    printf("INPUT DOSYASI OKUNUYOR...\n");
+    printInputFile();
     sortPlanes();
     printf("\n\n");
     // Create first node.
