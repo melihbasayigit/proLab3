@@ -141,11 +141,6 @@ void push(Node** head, int d)
     (*head) = temp;
 }
 
-int isEmpty(Node** head)
-{
-    return (*head) == NULL;
-}
-
 void timeUp() {
     Time++;
     if(Time == 25) {
