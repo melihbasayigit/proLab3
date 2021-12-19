@@ -130,7 +130,7 @@ void timeUp() {
 }
 
 void whatIsTime() {
-    printf("\n\nTime : %d",Time);
+    printf("TIME : %d\n",Time);
 }
 
 int sizeInput() { // Return size of planes in the input file.
@@ -306,50 +306,12 @@ int IndexOfLast() {
     
 }
 
-int IndexOfLastLandT() {
-    for (int i = InputSize - 1; i >= 0; i--)
-    {
-        if(Time == planes[i].LandTime + 1) {
-            return i;
-        }
-    }
-    
-}
-
-int IndexOfFirstLandT() {
-    for (int i = 0; i < InputSize; i++)
-    {
-        if(Time == planes[i].LandTime + 1) {
-            return i;
-        }
-    }
-}
-
 int IndexOfFirst() {
     for (int i = 0; i < InputSize; i++)
     {
         if(Time == planes[i].reqLandTime) {
             return i;
         }
-    }
-}
-
-/*void addTakeOffQueue(Node ** head) {
-    Node * temp = *head;
-    for (int i = IndexOfFirstLandT(); i < IndexOfLastLandT() +1 ; i++)
-    {
-        push(&(*head), planes[i].planeId);
-    }
-    if(temp->ID == -1) {
-        deleteElement(head,-1);
-    }
-}*/
-
-void addTakeOffQueue(Node ** head, int id) {
-    Node * temp = *head;
-    push(&(*head), id);
-    if(temp->ID == -1) {
-        deleteElement(head,-1);
     }
 }
 
@@ -390,32 +352,6 @@ void takeFlight(Node ** head, int id) {
     deleteElement(&(*head),id);
     int idIndex = findIndexByID(id);
     planes[idIndex].takeOffTime = Time;
-}
-
-void addlandQueue2(Node ** head) {
-    int c = 0;
-    for (int i = IndexOfFirst(); i < IndexOfLast() +1 ; i++)
-    {
-        c++;
-    }
-    if(totalTransportFlight + totalFlightInDay + c > 24) {
-        // Sadece birkacina izin ver.
-    }
-    else if(totalTransportFlight + totalFlightInDay > 24) {
-        printf("Gunluk izin verilen ucak sayisi 24'u gectigi icin artik izin verilememektedir.\n");
-        IsDayCompleted = true;
-    }
-    else {
-        Node * temp = *head;
-        for (int i = IndexOfFirst(); i < IndexOfLast() +1 ; i++)
-        {
-            push(&(*head), planes[i].planeId);
-        }
-        if(temp->ID == -1) 
-        {
-            deleteElement(&(*head),-1);
-        }
-    }
 }
 
 void addlandQueue(Node ** head) {
@@ -546,7 +482,6 @@ void StartFlights(Node **head, Node ** takeOffHead) {
         }
     }
     delayAllQueue(&(*head));
-    //take off
 }
 
 int main() {
@@ -574,6 +509,7 @@ int main() {
             // SADECE KALKIS YAP
         }
         else {
+            whatIsTime();
             StartFlights(&pq,&tq);
             printf("\n");
             timeUp();
@@ -590,15 +526,11 @@ int main() {
                 planes[i].takeOffTime = 1;
             }
             else if(planes[i].LandTime + 1 == Time) {
-                //printAllList(&tq);
-                //addTakeOffQueue(&tq,planes[i].planeId);
                 planes[i].takeOffTime = Time;
             }
         }
         timeUp();
-    }
-    
-      
+    } 
     sortOutputPlanes();
     printOutputFile();
     writeOutputFile();
