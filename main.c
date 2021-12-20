@@ -408,6 +408,21 @@ void addlandQueue(Node ** head) {
     if(temp->ID == -1) {
         deleteElement(head,-1);
     }
+    // PRIORITY
+    Node * h1 = * head;
+    while(h1 != NULL) {
+        Node * h2 = h1->next;
+        while(h2 != NULL) {
+            if(planes[findIndexByID(h1->ID)].priorityId < planes[findIndexByID(h2->ID)].priorityId) {
+                int changeit;
+                changeit = h1->ID;
+                h1->ID = h2->ID;
+                h2->ID = changeit;
+            }
+            h2 = h2->next;
+        }
+        h1 = h1->next;
+    }
 }
 
 void delayAllQueue(Node **head) {
