@@ -76,12 +76,12 @@ void printAllList(Node ** head) {
         int counter = 0;
         Node * temp = *head;
         if((*head) != NULL) {
-            printf("%d ", (*head)->ID);
+            printf("%d(%d) ", (*head)->ID, planes[findIndexByID((*head)->ID)].priorityId);
             counter++;
         }
         while(temp->next != NULL) {
             temp = temp->next;
-            printf("%d ", temp->ID);
+            printf("%d(%d) ", temp->ID, planes[findIndexByID(temp->ID)].priorityId);
             counter++;
         }
         printf("\nSIRADAKI UCAK SAYISI: %d", counter);
