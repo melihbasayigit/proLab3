@@ -76,12 +76,12 @@ void printAllList(Node ** head) {
         int counter = 0;
         Node * temp = *head;
         if((*head) != NULL) {
-            printf("%d(%d) ", (*head)->ID, planes[findIndexByID((*head)->ID)].priorityId);
+            printf("%d ", (*head)->ID);
             counter++;
         }
         while(temp->next != NULL) {
             temp = temp->next;
-            printf("%d(%d) ", temp->ID, planes[findIndexByID(temp->ID)].priorityId);
+            printf("%d ", temp->ID);
             counter++;
         }
         printf("\nSIRADAKI UCAK SAYISI: %d", counter);
@@ -407,21 +407,6 @@ void addlandQueue(Node ** head) {
     }
     if(temp->ID == -1) {
         deleteElement(head,-1);
-    }
-    // PRIORITY
-    Node * h1 = * head;
-    while(h1 != NULL) {
-        Node * h2 = h1->next;
-        while(h2 != NULL) {
-            if(planes[findIndexByID(h1->ID)].priorityId < planes[findIndexByID(h2->ID)].priorityId) {
-                int changeit;
-                changeit = h1->ID;
-                h1->ID = h2->ID;
-                h2->ID = changeit;
-            }
-            h2 = h2->next;
-        }
-        h1 = h1->next;
     }
 }
 
